@@ -2129,8 +2129,26 @@ document.addEventListener( "click", function( event ) {
     _setup: function(options) {
       options._container = document.createElement( 'div' );
       options._container.style.display = "none";
-      options._container.innerHTML  = options.text;
+      
+      var definitionString = /^define: *(.*)/;
+      if ( definitionString.test( options.text ) ) {
+        // FIXME: THIS IS A GLOBAL VARIABLE
+        dict_api = function(data) {
 
+          var query = data.query,
+              definition = (data.webDefinitions && data.webDefinitions[0].entries[0].terms[0].text) || "No definition found";
+
+          options._container.innerHTML = query + ": " + definition;
+        }
+
+        var wordQuery = options.text.match( definitionString )[1];
+
+        Popcorn.getJSONP( "http://www.google.com/dictionary/json?callback=dict_api&q=" + wordQuery + "&sl=en&tl=en&restrict=pr%2Cde&client=te", dict_api, false );
+      }
+      else {
+        options._container.innerHTML  = options.text;
+      }
+      
       document.getElementById( options.target ) && document.getElementById( options.target ).appendChild( options._container );
     },
     /**
